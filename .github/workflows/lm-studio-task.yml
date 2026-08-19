@@ -26,9 +26,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Send prompt to LM Studio
+        env:
+          LM_STUDIO_MODEL: ${{ inputs.model }}
+          LM_STUDIO_PROMPT: ${{ inputs.prompt }}
         run: |
           python scripts/lm_studio_task.py \
             --base-url "$LM_STUDIO_BASE_URL" \
             --api-key "$LM_STUDIO_API_KEY" \
-            --model "${{ inputs.model }}" \
-            --prompt "${{ inputs.prompt }}"
+            --model "$LM_STUDIO_MODEL" \
+            --prompt "$LM_STUDIO_PROMPT"
