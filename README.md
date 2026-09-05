@@ -53,13 +53,13 @@ graph LR
 
 ---
 
-## 💼 Engagement Models
+## 💼 Engagement Models & Direct Retainers
 
-| Engagement Type | Scope of Delivery | Typical Timeline |
-| :--- | :--- | :--- |
-| **System Architecture Audit** | Deep-dive performance and bottleneck audit with a remediation blueprint. | 1 – 2 Weeks |
-| **Custom Velocity Migration** | Engineering owned, hardware-direct data pipelines at near-zero marginal cost. | 4 – 8 Weeks |
-| **Fractional Principal Architect** | Strategic technical governance, architectural oversight, and private retainers. | Monthly Retainer |
+| Engagement Type | Scope of Delivery | Investment | Direct Checkout |
+| :--- | :--- | :--- | :--- |
+| **System Architecture Audit** | Deep-dive performance and bottleneck audit with a remediation blueprint. | **$299** *(Test/Review)* | [![Pay with Stripe](https://img.shields.io/badge/Stripe-Audit_Checkout-635BFF?style=for-the-badge&logo=stripe&logoColor=white)](https://dashboard.stripe.com/test/payments) |
+| **Custom Velocity Migration** | Engineering owned, hardware-direct data pipelines at near-zero marginal cost. | **$2,499** *(Standard)* | [![Pay with Stripe](https://img.shields.io/badge/Stripe-Retainer_Checkout-635BFF?style=for-the-badge&logo=stripe&logoColor=white)](https://dashboard.stripe.com/test/payments) |
+| **Fractional Principal Architect** | Strategic technical governance, architectural oversight, and private retainers. | **$9,999** *(Enterprise)* | [![Pay with Stripe](https://img.shields.io/badge/Stripe-Enterprise_Retainer-635BFF?style=for-the-badge&logo=stripe&logoColor=white)](https://dashboard.stripe.com/test/payments) |
 
 ---
 
