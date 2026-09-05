@@ -1,40 +1,65 @@
 # Adam Scar McCoy
-### Principal Software Architect • Low-Latency Audio Systems • Sovereign Edge AI
+### Principal Software Architect • Real-Time Systems & Audio Intelligence • Sovereign Edge AI
 
-[![GitHub Topics: Audio Intelligence](https://img.shields.io/badge/Focus-Low--Latency%20Audio%20%7C%20Edge%20AI-purple.svg?style=flat-square)](#)
-[![Stack: CoreAudio / CoreML](https://img.shields.io/badge/Stack-Apple%20Silicon%20%7C%20C%2B%2B%20%7C%20Swift-blue.svg?style=flat-square)](#)
-[![Engagements: Advisory & Audits](https://img.shields.io/badge/Consulting-Open%20for%20Architectural%20Reviews-success.svg?style=flat-square)](#)
-
----
-
-## ⚡ Flagship Systems & Deep-Dive Case Studies
-
-| Flagship Repository | Domain & Architecture | Core Breakthrough |
-| :--- | :--- | :--- |
-| 🎧 **[`Audio_ios_Case_Study`](https://github.com/adamscarmccoy-boop/Audio_ios_Case_Study)** | Low-Latency CoreAudio & AVFoundation | Lock-free SPSC circular ring buffer, sub-2ms DSP loop, 64-frame HAL threshold. |
-| 🔒 **[`sovereign-audio-intelligence`](https://github.com/adamscarmccoy-boop/sovereign-audio-intelligence)** | Air-Gapped Edge AI & Cognitive Audio | 37-dim acoustic math, embedded DuckDB/PyArrow SIMD lakehouse, sub-150µs LangGraph routing. |
-| 🏛️ **[`ADAMSCARMCCOY-CASE_STUDIES`](https://github.com/adamscarmccoy-boop/ADAMSCARMCCOY-CASE_STUDIES)** | Enterprise System Architecture & Audits | Diagnostic audits for priority inversion elimination, zero-copy pushdown, and cloud cost slashing. |
+[![Direct Inquiries](https://img.shields.io/badge/Email-adamscarmccoy%40gmail.com-red.svg?style=for-the-badge&logo=gmail)](mailto:adamscarmccoy@gmail.com)
+[![Download Resume](https://img.shields.io/badge/Executive%20Resume-PDF%20Download-blue.svg?style=for-the-badge&logo=adobeacrobatreader)](./Adam_Scar_McCoy_Resume.pdf)
+[![Location: United States](https://img.shields.io/badge/Location-Remote%20%2F%20US-black.svg?style=for-the-badge)](#)
+[![Engagements: Available](https://img.shields.io/badge/Advisory-Architecture%20Audits%20%26%20Retainers-success.svg?style=for-the-badge)](#)
 
 ---
 
-## 🔬 Deep-Dive Architectural Competencies
+## 🏛️ Executive Summary
+Principal Software Architect specializing in **mission-critical low-latency systems**, **air-gapped sovereign AI pipelines**, and **high-throughput embedded analytical lakehouses (DuckDB/PyArrow)**. 
+
+I help enterprise engineering organizations and venture-backed deep-tech teams eliminate thread contention bottlenecks, migrate multi-thousand-dollar cloud AI workloads to deterministic on-device hardware (Apple Silicon / CoreML), and design zero-copy data architectures.
+
+---
+
+## 📂 Core Case Studies & System Portfolios
+
+### 1. 🎧 [Real-Time iOS Audio Engine & Low-Latency Architecture](https://github.com/adamscarmccoy-boop/Audio_ios_Case_Study)
+* **Domain:** CoreAudio, AVFoundation HAL, C++11 Atomic Memory Barriers, Swift.
+* **Breakthrough:** Lock-free Single-Producer Single-Consumer (SPSC) ring buffer architecture delivering **sub-2ms DSP loop latency** and a strict 64-frame hardware buffer with zero priority inversion.
+* **Commercial Impact:** Replaces unstable prototype audio layers with a deterministic, zero-allocation real-time engine.
+
+### 2. 🔒 [Sovereign Audio Intelligence & Edge AI Engine](https://github.com/adamscarmccoy-boop/sovereign-audio-intelligence)
+* **Domain:** Apple Neural Engine, CoreML Quantization, Embedded DuckDB SIMD Lakehouse.
+* **Breakthrough:** 37-dimensional acoustic mathematical extraction coupled with a zero-copy embedded columnar database (DuckDB) and sub-150µs local graph routing.
+* **Commercial Impact:** 100% air-gapped compliance (zero cloud egress) with zero recurring API costs.
+
+### 3. 🏛️ [Enterprise System Architecture & Diagnostic Audits](https://github.com/adamscarmccoy-boop/ADAMSCARMCCOY-CASE_STUDIES)
+* **Domain:** Concurrency Audits, Vectorized Pushdown, Cloud-to-Edge AI Migration.
+* **Breakthrough:** 3-layer diagnostic audit methodology eliminating thread contention, optimizing columnar database schemas, and reducing system memory footprints by >80%.
+
+---
+
+## 🔬 Architectural Moats & Core Competencies
 
 ```mermaid
 graph LR
-    A[Real-Time Signal Ingestion] -->|Lock-Free CoreAudio HAL| B[vDSP / 37-Dim Acoustic Math]
+    A[Real-Time Signal & Audio Ingestion] -->|Lock-Free CoreAudio HAL| B[vDSP / 37-Dim Acoustic Physics]
     B -->|Zero-Copy SIMD Pushdown| C[Embedded DuckDB Lakehouse]
-    C -->|Sub-150µs Intent Graph| D[Apple Neural Engine / CoreML]
-    D --> E[Attested Deterministic Output]
+    C -->|Sub-150µs Graph Intent| D[Apple Neural Engine / CoreML]
+    D --> E[Attested Deterministic Insights]
 ```
 
-### Core Moats
-1. **Deterministic Audio Thread Safety:** Lock-free Single-Producer, Single-Consumer (SPSC) ring buffers with zero runtime allocations.
-2. **Embedded Analytical Vectorization:** Sub-10ms analytical queries across millions of feature records using embedded DuckDB + PyArrow.
-3. **Air-Gapped Sovereign AI:** On-device quantized model execution with zero cloud telemetry and zero marginal API fees.
+* **Deterministic Real-Time Audio (CoreAudio / HAL):** Zero heap allocation (`malloc`/`free`) on the audio callback thread, lock-free ring buffers, and vDSP vector math.
+* **Embedded Columnar Data Systems (DuckDB / PyArrow):** Ultra-fast SIMD analytical query pushdown over Parquet partitions directly in-process with zero socket overhead.
+* **Sovereign & Edge ML (CoreML / ANE):** On-device model execution eliminating cloud latency, third-party data compliance liabilities, and API SaaS overhead.
 
 ---
 
-## 💼 Direct Engagements & Consulting
-Available for **architecture health audits**, **latency reduction sprints**, and **fractional advisory**.
-* **GitHub:** [@adamscarmccoy-boop](https://github.com/adamscarmccoy-boop)
-* **Engagements:** Real-time system audits, edge ML migrations, and audio engine engineering.
+## 💼 Engagement Models & Advisory Scope
+
+| Engagement Type | Scope of Delivery | Typical Duration |
+| :--- | :--- | :--- |
+| **System Architecture Audit** | Deep-dive code/concurrency audit, latency profile, and bottleneck remediation blueprint. | 1 – 2 Weeks |
+| **Edge AI / Real-Time Migration** | Porting high-cost cloud workflows to on-device CoreML / CoreAudio or embedded DuckDB pipelines. | 4 – 8 Weeks |
+| **Fractional Principal Architect** | Strategic technical advisory, architectural governance, and high-level systems oversight. | Monthly Retainer |
+
+---
+
+## 📬 Direct Contact & Inquiries
+* **Primary Contact:** [adamscarmccoy@gmail.com](mailto:adamscarmccoy@gmail.com)
+* **GitHub Organization:** [@adamscarmccoy-boop](https://github.com/adamscarmccoy-boop)
+* **Location / Availability:** US-Based • Open for Architecture Reviews, Vendor Engagements, and Fractional Advisory.
