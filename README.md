@@ -7,22 +7,34 @@
 
 ---
 
-## ⚡ Flagship Systems & Case Studies
+## ⚡ Flagship Systems & Deep-Dive Case Studies
 
-* 🎧 **[Audio_ios_Case_Study](https://github.com/adamscarmccoy-boop/Audio_ios_Case_Study)** — Low-latency, lock-free real-time CoreAudio & AVFoundation pipeline for Apple Silicon (Sub-6ms I/O buffer).
-* 🔒 **[sovereign-audio-intelligence](https://github.com/adamscarmccoy-boop/sovereign-audio-intelligence)** — Air-gapped, zero-cloud on-device cognitive audio AI engine with 37-dimensional acoustic feature extraction.
-* 🏛️ **[ADAMSCARMCCOY-CASE_STUDIES](https://github.com/adamscarmccoy-boop/ADAMSCARMCCOY-CASE_STUDIES)** — Technical case studies on performance bottlenecks, thread contention elimination, and high-throughput data architectures.
+| Flagship Repository | Domain & Architecture | Core Breakthrough |
+| :--- | :--- | :--- |
+| 🎧 **[`Audio_ios_Case_Study`](https://github.com/adamscarmccoy-boop/Audio_ios_Case_Study)** | Low-Latency CoreAudio & AVFoundation | Lock-free SPSC circular ring buffer, sub-2ms DSP loop, 64-frame HAL threshold. |
+| 🔒 **[`sovereign-audio-intelligence`](https://github.com/adamscarmccoy-boop/sovereign-audio-intelligence)** | Air-Gapped Edge AI & Cognitive Audio | 37-dim acoustic math, embedded DuckDB/PyArrow SIMD lakehouse, sub-150µs LangGraph routing. |
+| 🏛️ **[`ADAMSCARMCCOY-CASE_STUDIES`](https://github.com/adamscarmccoy-boop/ADAMSCARMCCOY-CASE_STUDIES)** | Enterprise System Architecture & Audits | Diagnostic audits for priority inversion elimination, zero-copy pushdown, and cloud cost slashing. |
 
 ---
 
-## 🔬 Core Competencies & Moats
-* **Real-Time DSP & Audio Engines:** Lock-free circular ring buffers, vDSP / Accelerate framework math, sub-10ms buffer cycles.
-* **On-Device Sovereign AI:** Apple Neural Engine / CoreML quantized inference pipelines with zero cloud latency and zero telemetry.
-* **High-Throughput Vectorized Architecture:** Zero-copy SIMD processing and high-performance embedded systems.
+## 🔬 Deep-Dive Architectural Competencies
+
+```mermaid
+graph LR
+    A[Real-Time Signal Ingestion] -->|Lock-Free CoreAudio HAL| B[vDSP / 37-Dim Acoustic Math]
+    B -->|Zero-Copy SIMD Pushdown| C[Embedded DuckDB Lakehouse]
+    C -->|Sub-150µs Intent Graph| D[Apple Neural Engine / CoreML]
+    D --> E[Attested Deterministic Output]
+```
+
+### Core Moats
+1. **Deterministic Audio Thread Safety:** Lock-free Single-Producer, Single-Consumer (SPSC) ring buffers with zero runtime allocations.
+2. **Embedded Analytical Vectorization:** Sub-10ms analytical queries across millions of feature records using embedded DuckDB + PyArrow.
+3. **Air-Gapped Sovereign AI:** On-device quantized model execution with zero cloud telemetry and zero marginal API fees.
 
 ---
 
 ## 💼 Direct Engagements & Consulting
-Available for **architecture health audits**, **low-latency DSP optimization**, and **edge ML migrations**.
+Available for **architecture health audits**, **latency reduction sprints**, and **fractional advisory**.
 * **GitHub:** [@adamscarmccoy-boop](https://github.com/adamscarmccoy-boop)
-* **Engagements:** Architecture audits, latency reduction sprints, and fractional staff/advisory.
+* **Engagements:** Real-time system audits, edge ML migrations, and audio engine engineering.
