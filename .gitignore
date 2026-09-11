@@ -1,4 +1,8 @@
-# Environment and secrets
+# Environment & Secrets
 .env
 *.env
-*.env.*
+*.pem
+*.key
+
+# Compiled binaries & build artifacts
+fast_find_hidden
