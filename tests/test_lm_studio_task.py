@@ -10,7 +10,7 @@ import pytest
 from scripts.lm_studio_task import main, parse_args
 
 
-def test_parse_args():
+def test_parse_args_valid():
     test_args = [
         "lm_studio_task.py",
         "--base-url",
@@ -28,6 +28,42 @@ def test_parse_args():
         assert args.api_key == "test-key"
         assert args.model == "test-model"
         assert args.prompt == "Hello world"
+
+
+@pytest.mark.parametrize(
+    "missing_flag",
+    ["--base-url", "--api-key", "--model", "--prompt", "all"],
+)
+def test_parse_args_missing_required(missing_flag, capsys):
+    full_args = {
+        "--base-url": "http://localhost:1234/v1",
+        "--api-key": "test-key",
+        "--model": "test-model",
+        "--prompt": "Hello world",
+    }
+
+    if missing_flag == "all":
+        test_args = ["lm_studio_task.py"]
+    else:
+        del full_args[missing_flag]
+        test_args = ["lm_studio_task.py"]
+        for key, val in full_args.items():
+            test_args.extend([key, val])
+
+    with patch("sys.argv", test_args):
+        with pytest.raises(SystemExit) as exc_info:
+            parse_args()
+        assert exc_info.value.code == 2
+
+
+def test_parse_args_help(capsys):
+    test_args = ["lm_studio_task.py", "--help"]
+    with patch("sys.argv", test_args):
+        with pytest.raises(SystemExit) as exc_info:
+            parse_args()
+        assert exc_info.value.code == 0
+    captured = capsys.readouterr()
+    assert "Send a prompt to LM Studio's OpenAI-compatible chat API." in captured.out
 
 
 def test_main_success(capsys):
