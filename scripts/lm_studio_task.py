@@ -8,6 +8,7 @@ import json
 import sys
 import urllib.error
 import urllib.request
+from urllib.parse import urljoin
 
 
 def parse_args() -> argparse.Namespace:
@@ -23,7 +24,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    endpoint = args.base_url.rstrip("/") + "/chat/completions"
+    base_url = f"{args.base_url.rstrip('/')}/"
+    endpoint = urljoin(base_url, "chat/completions")
     payload = {
         "model": args.model,
         "messages": [
