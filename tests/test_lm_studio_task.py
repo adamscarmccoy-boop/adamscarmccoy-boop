@@ -140,3 +140,26 @@ def test_main_malformed_response_json(capsys):
     assert exit_code == 1
     captured = capsys.readouterr()
     assert "Invalid payload format" in captured.err
+
+
+def test_main_timeout_error(capsys):
+    test_args = [
+        "lm_studio_task.py",
+        "--base-url",
+        "http://localhost:1234/v1",
+        "--api-key",
+        "test-key",
+        "--model",
+        "test-model",
+        "--prompt",
+        "Hello world",
+    ]
+    timeout_error = TimeoutError("Request timed out")
+
+    with patch("sys.argv", test_args):
+        with patch("urllib.request.urlopen", side_effect=timeout_error):
+            exit_code = main()
+
+    assert exit_code == 1
+    captured = capsys.readouterr()
+    assert "Could not reach LM Studio at http://localhost:1234/v1/chat/completions: Request timed out" in captured.err
