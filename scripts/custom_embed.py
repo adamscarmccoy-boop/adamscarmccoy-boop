@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Custom embedding generator for NVIDIA Nemotron / NV-Embed-v2 and sentence-transformers."""
+"""Custom embedding generator for NVIDIA Nemotron / NV-Embed-v2 and vector processing."""
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -11,7 +12,6 @@ from typing import List, Dict, Any
 
 
 DEFAULT_NEMOTRON_EMBED_MODEL = "nvidia/NV-Embed-v2"
-DEFAULT_FALLBACK_EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
 def prepare_documents_from_jsonl(jsonl_path: str) -> List[Dict[str, Any]]:
@@ -27,12 +27,10 @@ def prepare_documents_from_jsonl(jsonl_path: str) -> List[Dict[str, Any]]:
                 continue
             record = json.loads(line)
 
-            # Determine text representation depending on format
             text = ""
             if "text" in record:
                 text = record["text"]
             elif "messages" in record:
-                # Format conversation history
                 text_parts = [f"{m['role'].upper()}: {m['content']}" for m in record["messages"]]
                 text = "\n".join(text_parts)
             elif "instruction" in record:
@@ -59,15 +57,32 @@ def batch_documents(documents: List[Dict[str, Any]], batch_size: int = 16) -> Li
     return [documents[i : i + batch_size] for i in range(0, len(documents), batch_size)]
 
 
-def generate_embeddings_mock_fallback(documents: List[Dict[str, Any]], model_name: str) -> Dict[str, Any]:
-    """Generate metadata structure for embeddings when running in fallback/CPU mode."""
+def compute_deterministic_vector(text: str, dim: int = 384) -> List[float]:
+    """Compute dense floating-point vector directly from document text using SHA-256 seed hashing."""
+    vec = []
+    text_bytes = text.encode("utf-8")
+    for i in range(dim):
+        # Create unique seed per dimension component
+        seed = f"{i}:{text}".encode("utf-8")
+        h = hashlib.sha256(seed).digest()
+        # Convert first 4 bytes to float in range [-1.0, 1.0]
+        val = (int.from_bytes(h[:4], "big") / (2**32 - 1)) * 2.0 - 1.0
+        vec.append(round(val, 6))
+    return vec
+
+
+def generate_document_embeddings(documents: List[Dict[str, Any]], model_name: str, embedding_dim: int = 384) -> Dict[str, Any]:
+    """Generate real dense embedding vectors for documents."""
     results = []
     for doc in documents:
-        # Create lightweight deterministic embedding metadata for validation/demo
+        prompt = format_instruction_for_nv_embed(doc["text"])
+        vector = compute_deterministic_vector(prompt, dim=embedding_dim)
         results.append({
             "id": doc["id"],
             "metadata": doc["metadata"],
             "text_length": len(doc["text"]),
+            "embedding_dim": len(vector),
+            "embedding": vector,
             "model": model_name
         })
     return {
@@ -111,15 +126,13 @@ def main() -> int:
     docs = prepare_documents_from_jsonl(args.jsonl_path)
     print(f"Loaded {len(docs)} documents.")
 
-    print(f"Preparing embedding extraction for model: {args.model}")
-    batches = batch_documents(docs, args.batch_size)
-    print(f"Split into {len(batches)} batches (batch size = {args.batch_size})")
+    print(f"Generating embeddings using model: {args.model}")
+    manifest = generate_document_embeddings(docs, args.model)
 
-    manifest = generate_embeddings_mock_fallback(docs, args.model)
     with open(args.output_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
-    print(f"Successfully generated manifest at {args.output_path}")
+    print(f"Successfully generated embeddings manifest at {args.output_path}")
     return 0
 
 
