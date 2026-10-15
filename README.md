@@ -67,3 +67,23 @@ graph LR
 * **Primary Contact:** [adamscarmccoy@gmail.com](mailto:adamscarmccoy@gmail.com)
 * **GitHub:** [@adamscarmccoy-boop](https://github.com/adamscarmccoy-boop)
 * **Availability:** United States (Remote) • Open for Architecture Reviews & Retainer Engagements.
+
+---
+
+## 🛠️ Native Windows & Cross-Platform High-Performance Capabilities
+
+This repository includes a native C/C++, ONNX, and LLM local execution pipeline tailored for low-latency Windows workflows:
+
+### Components Overview
+1. **Native C Dynamic Bridge (`src/native_bridge.h`, `src/native_bridge.c`)**
+   - High-performance, lock-free vector math routines compiled directly into platform dynamic libraries (`.dll` on Windows, `.so` on Linux).
+   - Python `ctypes` loader in `scripts/dll_runner.py`.
+
+2. **ONNX Engine (`scripts/onnx_engine.py`)**
+   - Direct graph building, model metadata inspection, and ONNX Runtime execution for custom ONNX model evaluation.
+
+3. **Unified Llama & LM Studio Runner (`scripts/llama_runner.py`)**
+   - Direct execution support for `llama.exe` CLI binaries, `llama-server` endpoints, and LM Studio OpenAI-compatible APIs with Windows path normalization.
+
+4. **Integrated Windows Workflow Orchestrator (`scripts/windows_workflow.py`)**
+   - End-to-end processing pipeline stringing together C dynamic library math processing, ONNX tensor inference, and LLM text generation.
