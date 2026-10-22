@@ -40,3 +40,17 @@ class TestOnnxEngine(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_pyarrow_tensor_binding(self):
+        import pyarrow as pa
+        from scripts.onnx_engine import onnx_output_to_pyarrow_tensor, pyarrow_tensor_to_numpy
+
+        build_linear_model(self.model_path, input_dim=4, weights=[2.0, 2.0, 2.0, 2.0], bias=[1.0, 1.0, 1.0, 1.0])
+        output = run_onnx_inference(self.model_path, [1.0, 2.0, 3.0, 4.0])
+
+        arrow_tensor = onnx_output_to_pyarrow_tensor(output)
+        self.assertIsInstance(arrow_tensor, pa.Tensor)
+        self.assertEqual(arrow_tensor.shape, (1, 4))
+
+        np_reconstructed = pyarrow_tensor_to_numpy(arrow_tensor)
+        np.testing.assert_allclose(output, np_reconstructed)

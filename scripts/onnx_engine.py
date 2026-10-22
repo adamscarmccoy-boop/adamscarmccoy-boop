@@ -121,3 +121,28 @@ def run_onnx_inference(
 
     outputs = session.run(None, {input_name: data_arr})
     return outputs[0]
+
+
+def onnx_output_to_pyarrow_tensor(output_array: np.ndarray) -> Any:
+    """Binds ONNX output NumPy array directly into a PyArrow Tensor zero-copy.
+
+    Args:
+        output_array: Output NumPy array from ONNX Runtime inference.
+
+    Returns:
+        pyarrow.Tensor representing the output data.
+    """
+    import pyarrow as pa
+    return pa.Tensor.from_numpy(output_array)
+
+
+def pyarrow_tensor_to_numpy(arrow_tensor: Any) -> np.ndarray:
+    """Converts a PyArrow Tensor back into a NumPy array zero-copy.
+
+    Args:
+        arrow_tensor: pyarrow.Tensor instance.
+
+    Returns:
+        NumPy array representation.
+    """
+    return arrow_tensor.to_numpy()
