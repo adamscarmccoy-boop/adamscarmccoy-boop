@@ -72,21 +72,21 @@ graph LR
 
 ## 🛠️ Native Windows & Cross-Platform High-Performance Capabilities
 
-This repository includes a native C/C++, ONNX, and LLM local execution pipeline tailored for low-latency Windows workflows:
+This repository provides a native C/C++, ONNX, and OpenAI-compatible API execution pipeline tailored for low-latency Windows workflows:
 
 ### Components Overview
 1. **Native C Dynamic Bridge (`src/native_bridge.h`, `src/native_bridge.c`)**
-   - High-performance, lock-free vector math routines compiled directly into platform dynamic libraries (`.dll` on Windows, `.so` on Linux).
+   - High-performance, lock-free vector math routines precompiled directly into platform dynamic libraries (`.dll` for Windows target, `.so` for Linux test execution).
    - Python `ctypes` loader in `scripts/dll_runner.py`.
 
 2. **ONNX Engine (`scripts/onnx_engine.py`)**
-   - Direct graph building, model metadata inspection, and ONNX Runtime execution for custom ONNX model evaluation.
+   - Direct graph building, model metadata inspection, ONNX Runtime execution, and PyArrow zero-copy tensor bindings.
 
-3. **Unified Llama & LM Studio Runner (`scripts/llama_runner.py`)**
-   - Direct execution support for `llama.exe` CLI binaries, `llama-server` endpoints, and LM Studio OpenAI-compatible APIs with Windows path normalization.
+3. **Unified OpenAI-Compatible Runner (`scripts/llama_runner.py`)**
+   - Standardized client supporting any OpenAI-compatible HTTP server endpoint (`/v1/chat/completions`), LM Studio local servers, `llama-server`, or direct `llama.exe` CLI binaries.
 
 4. **Integrated Windows Workflow Orchestrator (`scripts/windows_workflow.py`)**
-   - End-to-end processing pipeline stringing together C dynamic library math processing, ONNX tensor inference, and LLM text generation.
+   - End-to-end processing pipeline orchestrating C dynamic library math processing, ONNX tensor inference, and OpenAI-compatible text generation.
 
 ### Advanced C++ and Rust Native ONNX Ecosystem Integration
 
