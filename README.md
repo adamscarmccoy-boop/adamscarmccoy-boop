@@ -87,3 +87,56 @@ This repository includes a native C/C++, ONNX, and LLM local execution pipeline 
 
 4. **Integrated Windows Workflow Orchestrator (`scripts/windows_workflow.py`)**
    - End-to-end processing pipeline stringing together C dynamic library math processing, ONNX tensor inference, and LLM text generation.
+
+---
+
+## 🦀 Architectural Review: Enterprise Data to ONNX Shared Objects with Rust & Apache Arrow
+
+This codebase demonstrates an enterprise-grade, ultra-low latency pipeline that transforms columnar enterprise data into ONNX tensor inputs using Rust shared objects and Apache Arrow packages.
+
+```
++-----------------------------------------------------------------------------------------+
+|                                    ENTERPRISE DATA                                      |
+|                  (Apache Arrow RecordBatches / PyArrow / Polars DataFrames)             |
++-----------------------------------------------------------------------------------------+
+                                             |
+                                  Zero-Copy Arrow Buffers
+                                             v
++-----------------------------------------------------------------------------------------+
+|                             RUST NATIVE SHARED OBJECT (.so / .dll)                      |
+|                  (PyO3 / C ABI Dynamic Bridge: `src/rust_arrow_bridge`)                  |
+|  - Ingests Arrow Memory Buffers & Slices without serialization overhead                |
+|  - Executes vectorized math (scale, dot product, MSE loss, feature alignment)           |
+|  - Converts Arrow columns directly to contiguous f32 ONNX tensor buffers                |
++-----------------------------------------------------------------------------------------+
+                                             |
+                              Contiguous Tensor Memory Buffer
+                                             v
++-----------------------------------------------------------------------------------------+
+|                                  ONNX ENGINE RUNTIME                                    |
+|                        (ONNX Model Evaluation & Tensor Inference)                       |
++-----------------------------------------------------------------------------------------+
+                                             |
+                                    Inference Prediction
+                                             v
++-----------------------------------------------------------------------------------------+
+|                                LOCAL LLM / WORKFLOW RUNNER                              |
++-----------------------------------------------------------------------------------------+
+```
+
+### Core Architectural Pillars
+1. **Zero-Copy Apache Arrow Ingestion:**
+   - Apache Arrow defines a language-agnostic columnar in-memory format.
+   - Passing PyArrow Arrays, RecordBatches, or Polars DataFrames into the Rust dynamic library (`librust_arrow_bridge.so` / `.dll`) avoids JSON/pickle serialization costs, passing memory pointers directly into Rust routines.
+
+2. **Rust Shared Object (`cdylib` + PyO3) Strategy:**
+   - Compiled via `cargo build --release` into native shared objects (`.so` / `.dll`).
+   - Exposes dual C ABI exports (`#[no_mangle] pub extern "C"`) and PyO3 module bindings (`#[pymodule]`).
+   - Guarantees memory safety and zero-cost abstraction for vector operations.
+
+3. **Direct Arrow to ONNX Tensor Conversion:**
+   - Native Rust buffer routines convert float64 Arrow array data directly into contiguous float32 ONNX tensor memory slices.
+   - Minimizes heap allocations prior to invoking `onnxruntime.InferenceSession`.
+
+4. **Unified High-Velocity Pipeline (`scripts/windows_workflow.py` & `scripts/rust_arrow_bridge.py`):**
+   - Seamlessly strings together Enterprise Arrow Data -> Rust Shared Object Acceleration -> ONNX Model Evaluation -> Loss Computation -> Local Llama / LM Studio Analysis.
