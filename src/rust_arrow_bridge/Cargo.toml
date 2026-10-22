@@ -1,0 +1,12 @@
+[package]
+name = "rust_arrow_bridge"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "rust_arrow_bridge"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.23", features = ["extension-module"] }
+arrow = { version = "53.0" }

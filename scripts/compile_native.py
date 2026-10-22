@@ -1,4 +1,4 @@
-"""Compile C source code into shared libraries (.so for Linux / .dll for Windows)."""
+"""Compile C and Rust source code into shared libraries (.so for Linux / .dll for Windows)."""
 
 from __future__ import annotations
 
@@ -6,6 +6,10 @@ import os
 import platform
 import subprocess
 import sys
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from scripts.compile_rust import compile_rust_library
 
 
 def compile_native_library(
@@ -46,6 +50,14 @@ def compile_native_library(
     return os.path.normpath(output_path)
 
 
+def compile_all_native_libraries(output_dir: str = "build") -> dict[str, str]:
+    """Compiles both C and Rust dynamic shared object libraries."""
+    c_lib = compile_native_library(output_dir=output_dir)
+    rust_lib = compile_rust_library(output_dir=output_dir)
+    return {"c_library": c_lib, "rust_library": rust_lib}
+
+
 if __name__ == "__main__":
-    out = compile_native_library()
-    print(f"Compiled native library to: {out}")
+    res = compile_all_native_libraries()
+    print(f"Compiled native C library to: {res['c_library']}")
+    print(f"Compiled native Rust library to: {res['rust_library']}")
