@@ -87,3 +87,14 @@ This repository includes a native C/C++, ONNX, and LLM local execution pipeline 
 
 4. **Integrated Windows Workflow Orchestrator (`scripts/windows_workflow.py`)**
    - End-to-end processing pipeline stringing together C dynamic library math processing, ONNX tensor inference, and LLM text generation.
+
+### Advanced C++ and Rust Native ONNX Ecosystem Integration
+
+1. **C++ ONNX Runtime API (`src/onnx_cpp_bridge.hpp`)**
+   - Direct header inclusion `#include <onnxruntime_cxx_api.h>`.
+   - Core constructs: `Ort::Env` (runtime environment), `Ort::SessionOptions` (execution provider configuration like DirectML/CUDA/CPU), `Ort::Session` (model evaluation engine), and `Ort::Value` (zero-copy tensor allocation).
+
+2. **Rust ONNX & PyO3 Ecosystem**
+   - **`ort` Crate**: Safe, idiomatic Rust wrapper for ONNX Runtime. Supports zero-copy array operations via `ndarray`.
+   - **`tract-onnx`**: Pure Rust Neural Network Inference Engine (no external C/C++ dependencies).
+   - **PyO3 Bindings**: Exposes compiled Rust ONNX inference modules directly to Python as native extension modules without CFFI overhead.
