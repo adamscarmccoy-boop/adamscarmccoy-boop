@@ -1,5 +1,6 @@
-"""Tests for scripts/dll_runner.py."""
+"""Tests for scripts/dll_runner.py focusing strictly on Windows DLL integration."""
 
+import os
 import unittest
 from scripts.dll_runner import NativeBridgeRunner
 
@@ -8,6 +9,10 @@ class TestDllRunner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.runner = NativeBridgeRunner()
+
+    def test_dll_file_path(self):
+        self.assertTrue(self.runner.lib_path.endswith(".dll"))
+        self.assertTrue(os.path.exists(self.runner.lib_path))
 
     def test_dot_product(self):
         vec_a = [1.0, 2.0, 3.0]
@@ -30,7 +35,6 @@ class TestDllRunner(unittest.TestCase):
         actual = [1.0, 2.0, 3.0]
         predicted = [1.1, 1.9, 3.2]
         loss = self.runner.compute_loss(actual, predicted)
-        # diffs: 0.1, -0.1, 0.2 -> sq: 0.01, 0.01, 0.04 -> sum: 0.06 -> mean: 0.02
         self.assertAlmostEqual(loss, 0.02)
 
     def test_mismatched_vector_lengths(self):

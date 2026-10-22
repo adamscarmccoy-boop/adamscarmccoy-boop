@@ -1,30 +1,27 @@
-"""Dynamic Library (DLL / Shared Library) ctypes runner for low-latency native C math routines."""
+"""Dynamic Library (DLL) ctypes runner for low-latency native C math routines targeting Windows (.dll)."""
 
 from __future__ import annotations
 
 import ctypes
 import os
-import platform
-from typing import List, Optional, Union
+from typing import List, Optional
 
 from scripts.compile_native import compile_native_library
 
 
 class NativeBridgeRunner:
-    """Wrapper for calling C dynamic library functions via ctypes."""
+    """Wrapper for calling C DLL functions via ctypes."""
 
     def __init__(self, lib_path: Optional[str] = None):
         if lib_path is None:
-            system = platform.system()
-            ext = ".dll" if system == "Windows" else ".so"
-            default_path = os.path.join("build", f"native_bridge{ext}")
+            default_path = os.path.join("build", "native_bridge.dll")
             if not os.path.exists(default_path):
                 default_path = compile_native_library()
             lib_path = default_path
 
         self.lib_path = os.path.normpath(lib_path)
         if not os.path.exists(self.lib_path):
-            raise FileNotFoundError(f"Native library not found at: {self.lib_path}")
+            raise FileNotFoundError(f"Native DLL library not found at: {self.lib_path}")
 
         self.lib = ctypes.CDLL(self.lib_path)
         self._setup_function_signatures()
