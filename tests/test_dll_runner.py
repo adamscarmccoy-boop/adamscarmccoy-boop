@@ -1,4 +1,4 @@
-"""Tests for scripts/dll_runner.py focusing strictly on Windows DLL integration."""
+"""Tests for scripts/dll_runner.py supporting precompiled binaries across environments."""
 
 import os
 import unittest
@@ -10,8 +10,8 @@ class TestDllRunner(unittest.TestCase):
     def setUpClass(cls):
         cls.runner = NativeBridgeRunner()
 
-    def test_dll_file_path(self):
-        self.assertTrue(self.runner.lib_path.endswith(".dll"))
+    def test_library_file_path(self):
+        self.assertTrue(self.runner.lib_path.endswith(".dll") or self.runner.lib_path.endswith(".so"))
         self.assertTrue(os.path.exists(self.runner.lib_path))
 
     def test_dot_product(self):
