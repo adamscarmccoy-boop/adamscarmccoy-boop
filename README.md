@@ -140,3 +140,42 @@ This codebase demonstrates an enterprise-grade, ultra-low latency pipeline that 
 
 4. **Unified High-Velocity Pipeline (`scripts/windows_workflow.py` & `scripts/rust_arrow_bridge.py`):**
    - Seamlessly strings together Enterprise Arrow Data -> Rust Shared Object Acceleration -> ONNX Model Evaluation -> Loss Computation -> Local Llama / LM Studio Analysis.
+
+### 🦆 DuckDB, LanceDB, LM Studio Embeddings & Rust AOT In-Table Models
+
+The pipeline seamlessly bridges analytical SQL engines, vector databases, and local LLM embeddings with Ahead-Of-Time (AOT) compiled Rust shared objects:
+
+```
+                               +-------------------------------------+
+                               |         LM STUDIO / LOCAL LLM       |
+                               |    (/v1/embeddings vector pipeline)  |
+                               +-------------------------------------+
+                                                  |
+                                                  v
+                               +-------------------------------------+
+                               |         APACHE ARROW TABLE          |
+                               |     (Vectors + Operational Data)    |
+                               +-------------------------------------+
+                                     /                      \
+                    Zero-Copy Import /                        \ Persistent Vector Index
+                                    v                          v
+                     +-----------------------+      +-----------------------+
+                     |    DUCKDB ENGINE      |      |    LANCEDB VECTOR DB  |
+                     |  (In-Memory Fast SQL) |      | (ANN Vector Search)   |
+                     +-----------------------+      +-----------------------+
+                                    \                          /
+                                     \                        /
+                                      v                      v
+                               +-------------------------------------+
+                               |      RUST AOT IN-TABLE MODELS       |
+                               |  (`librust_arrow_bridge.so` / .dll)  |
+                               |  - In-table vector similarity       |
+                               |  - Fast SIMD dot product & scale    |
+                               |  - Contiguous ONNX tensor feed      |
+                               +-------------------------------------+
+```
+
+- **DuckDB Zero-Copy Ingestion:** Arrow Tables and RecordBatches register directly in DuckDB via `duckdb.connect().register()`, enabling sub-millisecond analytical SQL queries without data duplication.
+- **LanceDB Vector Storage:** Persistent, native Arrow vector tables provide fast Approximate Nearest Neighbor (ANN) vector indexing and semantic retrieval.
+- **LM Studio Embeddings:** The `UnifiedLlamaRunner.embed()` interface calls LM Studio's `/v1/embeddings` endpoint to transform raw text into vector embeddings.
+- **Rust AOT In-Table Models:** Ahead-Of-Time compiled Rust dynamic shared objects run directly over tabular vector columns to perform high-speed SIMD vector dot products, feature normalization, and in-table model scoring before dispatching to ONNX Runtime.

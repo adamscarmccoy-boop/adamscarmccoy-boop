@@ -11,6 +11,16 @@ try:
 except ImportError:
     pl = None
 
+try:
+    import duckdb
+except ImportError:
+    duckdb = None
+
+try:
+    import lancedb
+except ImportError:
+    lancedb = None
+
 from scripts.rust_arrow_bridge import RustArrowBridgeRunner
 from scripts.windows_workflow import WindowsWorkflowOrchestrator
 
@@ -66,6 +76,42 @@ class TestRustArrowBridge(unittest.TestCase):
         updated_table = self.runner.process_arrow_table(table, column_name="col_a", scale=3.0)
         self.assertIn("scaled_features", updated_table.column_names)
         self.assertEqual(updated_table.column("scaled_features").to_pylist(), [3.0, 6.0, 9.0])
+
+    def test_score_table_vectors_aot(self):
+        table = pa.Table.from_pydict({
+            "id": [1, 2, 3],
+            "vector": [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.5, 0.5, 0.0]]
+        })
+        query = [1.0, 0.0, 0.0]
+        scored_table = self.runner.score_table_vectors_aot(table, query_vector=query)
+        self.assertIn("rust_aot_score", scored_table.column_names)
+        scores = scored_table.column("rust_aot_score").to_pylist()
+        self.assertAlmostEqual(scores[0], 1.0)
+        self.assertAlmostEqual(scores[1], 0.0)
+        self.assertAlmostEqual(scores[2], 0.5)
+
+    def test_duckdb_loading_and_query(self):
+        if duckdb is None:
+            self.skipTest("DuckDB not installed")
+        table = pa.Table.from_pydict({
+            "id": [1, 2, 3],
+            "metric": [10.0, 20.0, 30.0]
+        })
+        con = self.runner.load_to_duckdb(table, table_name="test_arrow")
+        res = con.sql("SELECT SUM(metric) as total FROM test_arrow").arrow().read_all()
+        self.assertEqual(res.to_pydict()["total"][0], 60.0)
+
+    def test_lancedb_vector_loading_and_search(self):
+        if lancedb is None:
+            self.skipTest("LanceDB not installed")
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            table = pa.Table.from_pydict({
+                "id": [1, 2],
+                "vector": [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+            })
+            tbl = self.runner.load_to_lancedb(table, db_path=tmp_dir, table_name="test_lance")
+            search_arrow = tbl.search([1.0, 2.0, 3.0]).limit(1).to_arrow()
+            self.assertEqual(search_arrow.column("id").to_pylist(), [1])
 
     def test_mismatched_vector_lengths(self):
         vec_a = pa.array([1.0, 2.0])

@@ -6,7 +6,12 @@ import unittest
 import urllib.error
 from unittest.mock import MagicMock, patch
 
-from scripts.llama_runner import UnifiedLlamaRunner, query_openai_api, run_llama_cli
+from scripts.llama_runner import (
+    UnifiedLlamaRunner,
+    query_openai_api,
+    query_openai_embeddings,
+    run_llama_cli,
+)
 
 
 class TestLlamaRunner(unittest.TestCase):
@@ -35,6 +40,18 @@ class TestLlamaRunner(unittest.TestCase):
         with patch("urllib.request.urlopen", side_effect=http_error):
             with self.assertRaises(RuntimeError):
                 query_openai_api("http://127.0.0.1:1234/v1", "Test prompt")
+
+    def test_query_openai_embeddings(self):
+        mock_response = MagicMock()
+        mock_response.read.return_value = json.dumps({
+            "data": [{"embedding": [0.1, 0.2, 0.3]}]
+        }).encode("utf-8")
+
+        with patch("urllib.request.urlopen") as mock_urlopen:
+            mock_urlopen.return_value.__enter__.return_value = mock_response
+            runner = UnifiedLlamaRunner(mode="lm_studio")
+            embeddings = runner.embed(["test text"])
+            self.assertEqual(embeddings, [[0.1, 0.2, 0.3]])
 
     def test_run_llama_cli_success(self):
         mock_proc = MagicMock()

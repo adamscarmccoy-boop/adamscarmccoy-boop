@@ -1,4 +1,4 @@
-"""Python PyArrow and Polars bridge runner interfacing with Rust dynamic shared objects."""
+"""Python PyArrow, Polars, DuckDB, and LanceDB bridge runner interfacing with Rust dynamic shared objects."""
 
 from __future__ import annotations
 
@@ -15,11 +15,21 @@ try:
 except ImportError:
     pl = None
 
+try:
+    import duckdb
+except ImportError:
+    duckdb = None
+
+try:
+    import lancedb
+except ImportError:
+    lancedb = None
+
 from scripts.compile_rust import compile_rust_library
 
 
 class RustArrowBridgeRunner:
-    """Interfaces PyArrow and Polars data structures with compiled Rust shared objects."""
+    """Interfaces PyArrow, Polars, DuckDB, and LanceDB data structures with compiled Rust shared objects."""
 
     def __init__(self, lib_path: Optional[str] = None):
         if lib_path is None:
@@ -176,6 +186,48 @@ class RustArrowBridgeRunner:
         new_col = pa.array(scaled_res, type=pa.float64())
 
         return table.append_column(output_col_name, new_col)
+
+    def score_table_vectors_aot(
+        self,
+        table: pa.Table,
+        query_vector: List[float],
+        vector_column: str = "vector",
+        score_column: str = "rust_aot_score",
+    ) -> pa.Table:
+        """In-table model execution: Scores each vector row against a query vector using Rust AOT dot product."""
+        if vector_column not in table.column_names:
+            raise KeyError(f"Vector column '{vector_column}' not found in Arrow Table.")
+
+        vectors = table.column(vector_column).to_pylist()
+        scores = [self.dot_product(query_vector, row_vec) for row_vec in vectors]
+        new_col = pa.array(scores, type=pa.float64())
+        return table.append_column(score_column, new_col)
+
+    @staticmethod
+    def load_to_duckdb(
+        table: pa.Table,
+        table_name: str = "arrow_table",
+        connection: Optional[Any] = None,
+    ) -> Any:
+        """Loads and registers an Arrow Table zero-copy into DuckDB."""
+        if duckdb is None:
+            raise ImportError("DuckDB is not installed.")
+        con = connection or duckdb.connect()
+        con.register(table_name, table)
+        return con
+
+    @staticmethod
+    def load_to_lancedb(
+        table: pa.Table,
+        db_path: str = "/tmp/lancedb_repo",
+        table_name: str = "vectors",
+        mode: str = "overwrite",
+    ) -> Any:
+        """Loads and stores an Arrow Table with vector embeddings into LanceDB."""
+        if lancedb is None:
+            raise ImportError("LanceDB is not installed.")
+        db = lancedb.connect(db_path)
+        return db.create_table(table_name, data=table, mode=mode)
 
 
 if __name__ == "__main__":
