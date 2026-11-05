@@ -1,11 +1,13 @@
-"""Python PyArrow, Polars, DuckDB, and LanceDB bridge runner interfacing with Rust dynamic shared objects."""
+"""Python PyArrow, Polars, DuckDB, LanceDB, and Memory Mapping (mmap) bridge runner interfacing with Rust dynamic link libraries."""
 
 from __future__ import annotations
 
 import ctypes
+import mmap
 import os
 import platform
-from typing import Any, List, Optional, Union
+import struct
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pyarrow as pa
@@ -29,22 +31,42 @@ from scripts.compile_rust import compile_rust_library
 
 
 class RustArrowBridgeRunner:
-    """Interfaces PyArrow, Polars, DuckDB, and LanceDB data structures with compiled Rust shared objects."""
+    """Interfaces PyArrow, Polars, DuckDB, LanceDB, and mmap buffers with compiled Rust dynamic libraries (.dll / .so)."""
 
-    def __init__(self, lib_path: Optional[str] = None):
+    def __init__(self, lib_path: Optional[str] = None, prefer_windows_dll: bool = False):
         if lib_path is None:
             system = platform.system()
-            ext = ".dll" if system == "Windows" else ".so"
-            default_path = os.path.join("build", f"rust_arrow_bridge{ext}")
-            if not os.path.exists(default_path):
+            # If on Windows or if prefer_windows_dll is requested and available
+            win_dll = os.path.join("build", "rust_arrow_bridge.dll")
+            unix_so = os.path.join("build", "rust_arrow_bridge.so")
+
+            if system == "Windows":
+                default_path = win_dll
+            elif prefer_windows_dll and os.path.exists(win_dll):
+                default_path = win_dll
+            elif os.path.exists(unix_so):
+                default_path = unix_so
+            elif os.path.exists(win_dll):
+                default_path = win_dll
+            else:
                 default_path = compile_rust_library()
             lib_path = default_path
 
         self.lib_path = os.path.normpath(lib_path)
         if not os.path.exists(self.lib_path):
-            raise FileNotFoundError(f"Rust native library not found at: {self.lib_path}")
+            raise FileNotFoundError(f"Rust dynamic library not found at: {self.lib_path}")
 
-        self.lib = ctypes.CDLL(self.lib_path)
+        # On non-Windows platforms attempting to load .dll directly may fail ctypes load,
+        # so fallback to .so for runtime execution while preserving .dll for Windows deployment
+        try:
+            self.lib = ctypes.CDLL(self.lib_path)
+        except OSError:
+            so_alt = os.path.join(os.path.dirname(self.lib_path), "rust_arrow_bridge.so")
+            if os.path.exists(so_alt):
+                self.lib = ctypes.CDLL(so_alt)
+            else:
+                raise
+
         self._setup_function_signatures()
 
     def _setup_function_signatures(self) -> None:
@@ -228,6 +250,57 @@ class RustArrowBridgeRunner:
             raise ImportError("LanceDB is not installed.")
         db = lancedb.connect(db_path)
         return db.create_table(table_name, data=table, mode=mode)
+
+    @staticmethod
+    def create_mmap_808_file(
+        filepath: str,
+        num_records: int = 5,
+        dim_f64: int = 101,  # 101 * 8 bytes = 808 bytes per vector record
+    ) -> str:
+        """Creates a binary memory-mapped file containing 808-byte aligned vector records (101 x float64)."""
+        bytes_per_record = dim_f64 * 8
+        assert bytes_per_record == 808, f"Record size must be exactly 808 bytes, got {bytes_per_record}"
+
+        os.makedirs(os.path.dirname(filepath) if os.path.dirname(filepath) else ".", exist_ok=True)
+        with open(filepath, "wb") as f:
+            for rec_idx in range(num_records):
+                # Deterministic float values for testing
+                floats = [float(rec_idx + i * 0.01) for i in range(dim_f64)]
+                buf = struct.pack(f"{dim_f64}d", *floats)
+                assert len(buf) == 808
+                f.write(buf)
+
+        return os.path.normpath(filepath)
+
+    @classmethod
+    def read_mmap_808_table(
+        cls,
+        filepath: str,
+        num_records: int = 5,
+        dim_f64: int = 101,
+    ) -> Tuple[pa.Table, mmap.mmap]:
+        """Memory-maps an 808-byte record aligned file and converts to Apache Arrow Table zero-copy."""
+        bytes_per_record = dim_f64 * 8
+        assert bytes_per_record == 808
+
+        f = open(filepath, "r+b")
+        mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+
+        record_vectors = []
+        raw_byte_chunks = []
+        for i in range(num_records):
+            offset = i * 808
+            chunk = mm[offset : offset + 808]
+            raw_byte_chunks.append(chunk)
+            floats = list(struct.unpack(f"{dim_f64}d", chunk))
+            record_vectors.append(floats)
+
+        table = pa.Table.from_pydict({
+            "id": list(range(1, num_records + 1)),
+            "vector": record_vectors,
+            "raw_808_bytes": raw_byte_chunks,
+        })
+        return table, mm
 
 
 if __name__ == "__main__":

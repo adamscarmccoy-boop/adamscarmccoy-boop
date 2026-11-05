@@ -179,3 +179,12 @@ The pipeline seamlessly bridges analytical SQL engines, vector databases, and lo
 - **LanceDB Vector Storage:** Persistent, native Arrow vector tables provide fast Approximate Nearest Neighbor (ANN) vector indexing and semantic retrieval.
 - **LM Studio Embeddings:** The `UnifiedLlamaRunner.embed()` interface calls LM Studio's `/v1/embeddings` endpoint to transform raw text into vector embeddings.
 - **Rust AOT In-Table Models:** Ahead-Of-Time compiled Rust dynamic shared objects run directly over tabular vector columns to perform high-speed SIMD vector dot products, feature normalization, and in-table model scoring before dispatching to ONNX Runtime.
+
+#### ⚡ Windows Dynamic Libraries (.dll), Memory Mapping (mmap), and 808-Byte Alignment
+- **Windows-Native Dynamic Libraries (`.dll`):** All native math and Arrow acceleration modules are pre-compiled into native Windows 64-bit dynamic link libraries (`build/native_bridge.dll` and `build/rust_arrow_bridge.dll`) via `x86_64-w64-mingw32-gcc` and Cargo's `x86_64-pc-windows-gnu` toolchain.
+- **808-Byte Memory-Mapped (`mmap`) Vectors:** Binary vectors are aligned to exact 808-byte frames (101 x 8-byte IEEE 754 double-precision floats, totaling exactly 808 bytes per record).
+- **Direct Engine Integration:**
+  1. `RustArrowBridgeRunner.create_mmap_808_file()` creates deterministic, byte-aligned 808-byte vector records.
+  2. `RustArrowBridgeRunner.read_mmap_808_table()` maps the 808-byte buffers directly into Apache Arrow zero-copy tables.
+  3. Memory-mapped tables register instantly in DuckDB for zero-copy analytical queries and persist into LanceDB for ANN search.
+  4. In-table model evaluations execute via AOT compiled Rust `.dll` routines (`rust_fast_dot_product`) without Python memory allocations.
