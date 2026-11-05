@@ -87,3 +87,104 @@ This repository includes a native C/C++, ONNX, and LLM local execution pipeline 
 
 4. **Integrated Windows Workflow Orchestrator (`scripts/windows_workflow.py`)**
    - End-to-end processing pipeline stringing together C dynamic library math processing, ONNX tensor inference, and LLM text generation.
+
+---
+
+## 🦀 Architectural Review: Enterprise Data to ONNX Shared Objects with Rust & Apache Arrow
+
+This codebase demonstrates an enterprise-grade, ultra-low latency pipeline that transforms columnar enterprise data into ONNX tensor inputs using Rust shared objects and Apache Arrow packages.
+
+```
++-----------------------------------------------------------------------------------------+
+|                                    ENTERPRISE DATA                                      |
+|                  (Apache Arrow RecordBatches / PyArrow / Polars DataFrames)             |
++-----------------------------------------------------------------------------------------+
+                                             |
+                                  Zero-Copy Arrow Buffers
+                                             v
++-----------------------------------------------------------------------------------------+
+|                             RUST NATIVE SHARED OBJECT (.so / .dll)                      |
+|                  (PyO3 / C ABI Dynamic Bridge: `src/rust_arrow_bridge`)                  |
+|  - Ingests Arrow Memory Buffers & Slices without serialization overhead                |
+|  - Executes vectorized math (scale, dot product, MSE loss, feature alignment)           |
+|  - Converts Arrow columns directly to contiguous f32 ONNX tensor buffers                |
++-----------------------------------------------------------------------------------------+
+                                             |
+                              Contiguous Tensor Memory Buffer
+                                             v
++-----------------------------------------------------------------------------------------+
+|                                  ONNX ENGINE RUNTIME                                    |
+|                        (ONNX Model Evaluation & Tensor Inference)                       |
++-----------------------------------------------------------------------------------------+
+                                             |
+                                    Inference Prediction
+                                             v
++-----------------------------------------------------------------------------------------+
+|                                LOCAL LLM / WORKFLOW RUNNER                              |
++-----------------------------------------------------------------------------------------+
+```
+
+### Core Architectural Pillars
+1. **Zero-Copy Apache Arrow Ingestion:**
+   - Apache Arrow defines a language-agnostic columnar in-memory format.
+   - Passing PyArrow Arrays, RecordBatches, or Polars DataFrames into the Rust dynamic library (`librust_arrow_bridge.so` / `.dll`) avoids JSON/pickle serialization costs, passing memory pointers directly into Rust routines.
+
+2. **Rust Shared Object (`cdylib` + PyO3) Strategy:**
+   - Compiled via `cargo build --release` into native shared objects (`.so` / `.dll`).
+   - Exposes dual C ABI exports (`#[no_mangle] pub extern "C"`) and PyO3 module bindings (`#[pymodule]`).
+   - Guarantees memory safety and zero-cost abstraction for vector operations.
+
+3. **Direct Arrow to ONNX Tensor Conversion:**
+   - Native Rust buffer routines convert float64 Arrow array data directly into contiguous float32 ONNX tensor memory slices.
+   - Minimizes heap allocations prior to invoking `onnxruntime.InferenceSession`.
+
+4. **Unified High-Velocity Pipeline (`scripts/windows_workflow.py` & `scripts/rust_arrow_bridge.py`):**
+   - Seamlessly strings together Enterprise Arrow Data -> Rust Shared Object Acceleration -> ONNX Model Evaluation -> Loss Computation -> Local Llama / LM Studio Analysis.
+
+### 🦆 DuckDB, LanceDB, LM Studio Embeddings & Rust AOT In-Table Models
+
+The pipeline seamlessly bridges analytical SQL engines, vector databases, and local LLM embeddings with Ahead-Of-Time (AOT) compiled Rust shared objects:
+
+```
+                               +-------------------------------------+
+                               |         LM STUDIO / LOCAL LLM       |
+                               |    (/v1/embeddings vector pipeline)  |
+                               +-------------------------------------+
+                                                  |
+                                                  v
+                               +-------------------------------------+
+                               |         APACHE ARROW TABLE          |
+                               |     (Vectors + Operational Data)    |
+                               +-------------------------------------+
+                                     /                      \
+                    Zero-Copy Import /                        \ Persistent Vector Index
+                                    v                          v
+                     +-----------------------+      +-----------------------+
+                     |    DUCKDB ENGINE      |      |    LANCEDB VECTOR DB  |
+                     |  (In-Memory Fast SQL) |      | (ANN Vector Search)   |
+                     +-----------------------+      +-----------------------+
+                                    \                          /
+                                     \                        /
+                                      v                      v
+                               +-------------------------------------+
+                               |      RUST AOT IN-TABLE MODELS       |
+                               |  (`librust_arrow_bridge.so` / .dll)  |
+                               |  - In-table vector similarity       |
+                               |  - Fast SIMD dot product & scale    |
+                               |  - Contiguous ONNX tensor feed      |
+                               +-------------------------------------+
+```
+
+- **DuckDB Zero-Copy Ingestion:** Arrow Tables and RecordBatches register directly in DuckDB via `duckdb.connect().register()`, enabling sub-millisecond analytical SQL queries without data duplication.
+- **LanceDB Vector Storage:** Persistent, native Arrow vector tables provide fast Approximate Nearest Neighbor (ANN) vector indexing and semantic retrieval.
+- **LM Studio Embeddings:** The `UnifiedLlamaRunner.embed()` interface calls LM Studio's `/v1/embeddings` endpoint to transform raw text into vector embeddings.
+- **Rust AOT In-Table Models:** Ahead-Of-Time compiled Rust dynamic shared objects run directly over tabular vector columns to perform high-speed SIMD vector dot products, feature normalization, and in-table model scoring before dispatching to ONNX Runtime.
+
+#### ⚡ Windows Dynamic Libraries (.dll), Memory Mapping (mmap), and 808-Byte Alignment
+- **Windows-Native Dynamic Libraries (`.dll`):** All native math and Arrow acceleration modules are pre-compiled into native Windows 64-bit dynamic link libraries (`build/native_bridge.dll` and `build/rust_arrow_bridge.dll`) via `x86_64-w64-mingw32-gcc` and Cargo's `x86_64-pc-windows-gnu` toolchain.
+- **808-Byte Memory-Mapped (`mmap`) Vectors:** Binary vectors are aligned to exact 808-byte frames (101 x 8-byte IEEE 754 double-precision floats, totaling exactly 808 bytes per record).
+- **Direct Engine Integration:**
+  1. `RustArrowBridgeRunner.create_mmap_808_file()` creates deterministic, byte-aligned 808-byte vector records.
+  2. `RustArrowBridgeRunner.read_mmap_808_table()` maps the 808-byte buffers directly into Apache Arrow zero-copy tables.
+  3. Memory-mapped tables register instantly in DuckDB for zero-copy analytical queries and persist into LanceDB for ANN search.
+  4. In-table model evaluations execute via AOT compiled Rust `.dll` routines (`rust_fast_dot_product`) without Python memory allocations.

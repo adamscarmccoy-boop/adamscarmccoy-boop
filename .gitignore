@@ -3,3 +3,11 @@
 *.env
 *.env.*
 __pycache__/
+target/
+**/target/
+build/
+*.so
+*.dll
+*.pyd
+*.onnx
+*.pyc
